@@ -13,3 +13,5 @@ router.put('/:list_id', listHandler.updateList)
 
 // delete a list
 router.delete('/:list_id', listHandler.deleteList)
+
+module.exports = router

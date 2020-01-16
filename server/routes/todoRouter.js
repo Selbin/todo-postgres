@@ -13,3 +13,5 @@ router.put('/:todo_id', todoHandler.updateTodo)
 
 // delete a list
 router.delete('/:todo_id', todoHandler.deleteTodo)
+
+module.exports = router

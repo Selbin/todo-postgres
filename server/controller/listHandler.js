@@ -49,7 +49,7 @@ const updateList = async (req, res) => {
 
 const deleteList = async (req, res) => {
   const { id } = req.params.list_id
-  const query = 'DELETE FROM list WHERE id = $1'
+  const query = 'DELETE FROM list WHERE id = $1 RETURNING *'
   try {
     const result = await exeQuery(query, [id])
     if (result.rowCount > 0) res.status(200).json({ message: 'deleted' })
@@ -58,3 +58,5 @@ const deleteList = async (req, res) => {
     res.status(500).json(createError(500, 'list deletion failed'))
   }
 }
+
+module.exports = { createList, updateList, deleteList, showAllList }
