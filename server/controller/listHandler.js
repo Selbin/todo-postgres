@@ -6,6 +6,7 @@ showAllList
 updateList
 deleteList
 */
+
 const createError = (status, message) => {
   return { status, message }
 }
@@ -50,6 +51,9 @@ const deleteList = async (req, res) => {
   const query = 'DELETE FROM list WHERE id = $1'
   try {
     const result = await exeQuery(query, [id])
-    
-  } catch (e) {}
+    if (result.rowCount > 0) res.status(200).json({ message: 'deleted' })
+    else res.status(404).json({ message: 'list not found' })
+  } catch (e) {
+    res.status(500).json(createError(500, 'list deletion failed'))
+  }
 }
