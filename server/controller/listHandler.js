@@ -25,7 +25,7 @@ const showAllList = async (req, res) => {
   const query = ' SELECT * FROM list'
   try {
     const result = await exeQuery(query)
-    if (result.rowCount > 0) res.status(200).json(result.rows[0])
+    if (result.rowCount > 0) res.status(200).json(result.rows)
     else res.status(200).json({ message: 'no list present' })
   } catch (e) {
     res.status(500).json(createError(500, 'fetch failed'))
@@ -50,6 +50,6 @@ const deleteList = async (req, res) => {
   const query = 'DELETE FROM list WHERE id = $1'
   try {
     const result = await exeQuery(query, [id])
-
+    
   } catch (e) {}
 }
