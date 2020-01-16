@@ -34,7 +34,8 @@ const showAllList = async (req, res) => {
 }
 
 const updateList = async (req, res) => {
-  const { id, listName } = req.body
+  const { listName } = req.body
+  const id = parseInt(req.params.list_id)
   const query =
     'UPDATE list SET listname = $1 WHERE id = $2 RETURNING id, listname'
   try {
@@ -47,7 +48,7 @@ const updateList = async (req, res) => {
 }
 
 const deleteList = async (req, res) => {
-  const { id } = req.body
+  const { id } = req.params.list_id
   const query = 'DELETE FROM list WHERE id = $1'
   try {
     const result = await exeQuery(query, [id])
