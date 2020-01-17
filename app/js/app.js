@@ -4,10 +4,6 @@ const mainContainer = document.getElementById('app-main-container')
 const baseUrl = 'http://localhost:8000/'
 let allList
 
-/* const listIds = window.localStorage.getItem('listIds')
-  ? JSON.parse(window.localStorage.getItem('listIds'))
-  : [] */
-
 // function to create elements
 function createElement (type, props, ...children) {
   const dom = document.createElement(type)
@@ -19,6 +15,7 @@ function createElement (type, props, ...children) {
   return dom
 }
 
+// function to dynamically provide arguments to fetch
 async function fetchData (url, method, header, body) {
   const response = await window.fetch(url, {
     method,
@@ -27,7 +24,6 @@ async function fetchData (url, method, header, body) {
     },
     body
   })
-  console.log(response)
   return response
 }
 
@@ -42,25 +38,13 @@ async function showAllList () {
   }
 }
 
+// function written for supporting search
+// allList will have all lists
 async function loadAllList () {
   const response = await fetchData(baseUrl + 'list', 'GET', 'application/json')
   if (response.status === 200) {
     allList = await response.json()
   }
-}
-
-// to delete list
-async function deleteList (event) {
-  const id = event.target.id.slice(2)
-  const response = await fetchData(
-    `${baseUrl}list/${id}`,
-    'DELETE',
-    'application/json'
-  )
-  if (response.status === 200) {
-    document.getElementById('lc' + id).remove()
-  }
-  event.stopPropagation()
 }
 
 // to edit list
@@ -84,6 +68,21 @@ async function updateList (event) {
     }))
   }
 }
+
+// to delete list
+async function deleteList (event) {
+  const id = event.target.id.slice(2)
+  const response = await fetchData(
+    `${baseUrl}list/${id}`,
+    'DELETE',
+    'application/json'
+  )
+  if (response.status === 200) {
+    document.getElementById('lc' + id).remove()
+  }
+  event.stopPropagation()
+}
+
 // to render list
 function renderList (list) {
   mainContainer.appendChild(
@@ -523,7 +522,6 @@ search.addEventListener('click', event => {
         showAllList()
         return
       }
-
       for (const list of allList) {
         if (regex.test(list.listname)) {
           mainContainer.innerHTML = ''
