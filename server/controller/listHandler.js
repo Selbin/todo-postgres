@@ -26,8 +26,7 @@ const showAllList = async (req, res) => {
   const query = ' SELECT * FROM list'
   try {
     const result = await exeQuery(query)
-    if (result.rowCount > 0) res.status(200).json(result.rows)
-    else res.status(200).json({ message: 'no list present' })
+    res.status(200).json(result.rows)
   } catch (e) {
     res.status(500).json(createError(500, 'fetch failed'))
   }
@@ -35,7 +34,7 @@ const showAllList = async (req, res) => {
 
 const updateList = async (req, res) => {
   const { listName } = req.body
-  const id = parseInt(req.params.list_id)
+  const id = req.params.list_id
   const query =
     'UPDATE list SET listname = $1 WHERE id = $2 RETURNING id, listname'
   try {
@@ -48,11 +47,11 @@ const updateList = async (req, res) => {
 }
 
 const deleteList = async (req, res) => {
-  const { id } = req.params.list_id
+  const id = req.params.list_id
   const query = 'DELETE FROM list WHERE id = $1 RETURNING *'
   try {
     const result = await exeQuery(query, [id])
-    if (result.rowCount > 0) res.status(200).json({ message: 'deleted' })
+    if (result.rowCount > 0) res.status(200).json(result.rows[0])
     else res.status(404).json({ message: 'list not found' })
   } catch (e) {
     res.status(500).json(createError(500, 'list deletion failed'))

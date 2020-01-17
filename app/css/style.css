@@ -1,0 +1,193 @@
+@import url('https://fonts.googleapis.com/css?family=Montserrat&display=swap');
+
+body {
+    font-family: 'Montserrat', sans-serif;
+    background-color:rgb(103, 103, 103);
+  }
+
+#navbar {
+    
+    display: flex;
+    height: 55px;
+    background-color: rgb(42, 42, 42);
+    align-items: center;
+    justify-content: start;
+}
+
+.btn {
+    border-width: 0;
+    min-width: 100px;
+    background-color: rgb(80, 79, 79);
+    color: whitesmoke;
+    padding: 5px 15px;
+    font-size: 0.9em;
+    cursor: pointer;
+    border-radius: 4px;
+    margin: 10px;
+}
+
+button:hover{
+    background-color: rgb(41, 35, 35);
+    color: orange;
+}
+
+/* .nav-item {
+    width: 30%;
+} */
+
+#app-main-container {
+    width: 50%;
+    margin: 50px auto;
+}
+
+.list-header {
+    color: whitesmoke;
+    display: flex;
+    box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 0.507);
+    background-color: rgb(42, 42, 42);
+    justify-content: space-around;
+    align-items: center;
+    border-radius: 5px;
+}
+
+.list-header h3 {
+    width: 70%;
+    margin: 10px;
+    cursor: pointer;
+}
+
+.list-operations {
+    width: 10%;
+    justify-content: space-between;
+    display: flex;
+}
+
+.list-operations i {
+    flex: 1;
+}
+
+.calendar{
+    position: absolute;
+    right: 36.6%;
+    opacity: 0%;
+    cursor: pointer;
+}
+
+textarea{
+    position: absolute;
+    right: 17.4%;
+    z-index: 100;
+    display: none;
+    color: whitesmoke;
+    border: 1px solid #1a1c1d;
+    border-radius: 5px;
+    min-height: 90px;
+    background-color: rgb(42, 40, 40);
+    cursor: pointer;
+}
+
+.dropdown{
+    position: absolute;
+    right: 29%;
+    width: 20px;
+    opacity: 0%;
+    cursor: pointer;
+}
+
+.list-container{
+    margin: 10px;
+}
+
+i{
+    cursor: pointer;
+}
+
+.todo{
+    display: flex;
+    flex-direction: column;
+    color: whitesmoke;
+    padding: 10px;
+    box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 0.507);
+    background-color: rgb(65, 62, 62);
+}
+.inputlist{
+    border-width: 0;
+    padding: 3px;
+    left: 25%;
+    width: 49%;
+    display: none;
+    position:absolute;
+}
+.task-input{
+    width: 100%;
+    opacity: 90%;
+    border: 0;
+    color: whitesmoke;
+    background-color:rgb(65, 62, 62);
+}
+
+.list-input-edit{
+    width: 70%;
+    margin: 10px;
+    cursor: pointer;
+    border-width: 0;
+    color: whitesmoke;
+    background-color: rgb(42, 42, 42);
+}
+.list-input-edit-active{
+    width: 70%;
+    padding: 2px;
+    margin: 10px;
+    cursor: pointer;
+    border-width: 0;
+    color: rgb(7, 7, 7);
+    background-color:whitesmoke;
+}
+.task-input-edit{
+    width: 100%;
+    opacity: 90%;
+    border: 0;
+    padding: 2px;  
+    color: rgb(7, 7, 7);
+    background-color:whitesmoke;
+}
+
+.todo-input{
+    border-width: 0;
+    padding: 3px;
+    width: 99%;
+}
+.todo-container {
+    display: flex;
+    margin:15px 0px;
+    justify-content: space-between;
+}
+
+.todo-container div:first-child {
+    width: 5%;
+}
+
+.todo-container div:nth-child(2) {
+    width: 65%;
+}
+
+.todo-container div:last-child {
+    width: 25%;
+}
+
+.todo-operations {
+    display: flex;
+    justify-content: space-around;
+}
+
+.low {
+    color: whitesmoke;
+}
+
+.medium {
+    color: rgb(199, 130, 47);
+}
+
+.high {
+    color: rgb(189, 60, 60);
+}

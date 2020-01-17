@@ -41,7 +41,7 @@ const deleteTodo = async (req, res) => {
   const query = 'DELETE FROM todo WHERE id = $1 RETURNING *'
   try {
     const result = await exeQuery(query, [todoId])
-    if (result.rowCount > 0) res.status(200).json(result.row[0])
+    if (result.rowCount > 0) res.status(200).json(result.rows[0])
     else res.status(404).json(createError(404, 'todo not found'))
   } catch (e) {
     res.status(500).json(createError(500, 'todo deletion failed'))
@@ -52,38 +52,14 @@ const updateTodo = async (req, res) => {
   const todoId = req.params.todo_id
   const column = req.body.column
   const value = req.body.value
-  let query = 'UPDATE todo SET '
-  switch (column) {
-    case 'todoname':
-      query = query + 'todoname = $1'
-      break
-
-    case 'scheduled':
-      query = query + 'scheduled = $1'
-      break
-
-    case 'priority':
-      query = query + 'priority = $1'
-      break
-
-    case 'completed':
-      query = query + 'completed = $1'
-      break
-
-    case 'note':
-      query = query + 'note = $1'
-      break
-
-    default:
-      return res
-        .status(400)
-        .json(createError(400, 'cant perform that operation'))
+  if (!(column in ['todoname', 'priority', 'scheduled', 'note', 'completed'])) {
+    return res.status(createError(403, 'forbidden'))
   }
   try {
-    const result = await exeQuery(query + ' WHERE id = $2 RETURNING *', [
-      value,
-      todoId
-    ])
+    const result = await exeQuery(
+      'UPDATE todo SET $1 = $2 WHERE id = $3 RETURNING *',
+      [column, value, todoId]
+    )
     if (result.rowCount > 0) res.status(200).json(result.rows[0])
     else res.status(404).json(createError(404, 'todo not found'))
   } catch (e) {
