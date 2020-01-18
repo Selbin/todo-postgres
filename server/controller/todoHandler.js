@@ -15,7 +15,7 @@ const createTodo = async (req, res) => {
   const listId = req.params.list_id
   const todoName = req.body.todoName
   const query =
-    'INSERT INTO todo (listid, todoname) VALUES ($1, $2) RETURNING id, todoname'
+    'INSERT INTO todo (listid, todoname) VALUES ($1, $2) RETURNING *'
   try {
     const result = await exeQuery(query, [listId, todoName])
     res.status(200).json(result.rows[0])
@@ -52,14 +52,9 @@ const updateTodo = async (req, res) => {
   const todoId = req.params.todo_id
   const column = req.body.column
   const value = req.body.value
-  if (!(column in ['todoname', 'priority', 'scheduled', 'note', 'completed'])) {
-    return res.status(createError(403, 'forbidden'))
-  }
+  const query = `UPDATE todo SET ${column} = $1 WHERE id = $2 RETURNING *`
   try {
-    const result = await exeQuery(
-      'UPDATE todo SET $1 = $2 WHERE id = $3 RETURNING *',
-      [column, value, todoId]
-    )
+    const result = await exeQuery(query, [value, todoId])
     if (result.rowCount > 0) res.status(200).json(result.rows[0])
     else res.status(404).json(createError(404, 'todo not found'))
   } catch (e) {

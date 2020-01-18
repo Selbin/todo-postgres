@@ -129,40 +129,14 @@ function renderList (list) {
   )
 }
 
-function todoComplete (event) {
-  const parent = event.target.parentNode.parentNode
-  const id = parent.id.slice(4)
-  const todoContainer = event.target.parentNode.parentNode.parentNode.parentNode
-  const containerId = todoContainer.id.slice(2)
-  const list = JSON.parse(window.localStorage.getItem(containerId))
-  const tasks = list.todo
-  console.log(document.getElementById('tx' + id).style.textDecoration)
-  if (document.getElementById('tx' + id).style.textDecoration === 'none') {
-    document.getElementById('tx' + id).style.textDecoration = 'line-through'
-    for (const task of tasks) {
-      if (task.id === Number(id)) {
-        task.complete = true
-      }
-    }
-  } else {
-    document.getElementById('tx' + id).style.textDecoration = 'none'
-    for (const task of tasks) {
-      if (task.id === Number(id)) {
-        task.complete = false
-      }
-    }
-  }
-  list.todo = tasks
-  window.localStorage.setItem(containerId, JSON.stringify(list))
-}
 // to render todos
-function rendertodo (id, todo, lastId) {
+function rendertodo (todo) {
   let complete
   todo.complete ? (complete = 'line-through') : (complete = 'none')
-  document.getElementById('todo' + id).appendChild(
+  document.getElementById('todo' + todo.listid).appendChild(
     createElement(
       'div',
-      { id: `toct${lastId}`, className: `todo-container ${todo.priority}` },
+      { id: `toct${todo.id}`, className: `todo-container ${todo.priority}` },
       createElement(
         'div',
         {},
@@ -177,9 +151,9 @@ function rendertodo (id, todo, lastId) {
         'div',
         {},
         createElement('input', {
-          id: `tx${lastId}`,
+          id: `tx${todo.id}`,
           type: 'text',
-          value: todo.name,
+          value: todo.todoname,
           className: 'task-input',
           style: `text-decoration: ${complete};`,
           disabled: 'disabled',
@@ -190,11 +164,11 @@ function rendertodo (id, todo, lastId) {
         'div',
         { className: 'todo-operations' },
         createElement('i', {
-          id: `cl${lastId}`,
+          id: `cl${todo.id}`,
           className: 'far fa-calendar'
         }),
         createElement('input', {
-          id: `in${lastId}`,
+          id: `in${todo.id}`,
           type: 'date',
           value: todo.scheduled,
           min: `${new Date().getFullYear()}-${'0' +
@@ -205,27 +179,27 @@ function rendertodo (id, todo, lastId) {
           onchange: schedule
         }),
         createElement('i', {
-          id: `nt${lastId}`,
+          id: `nt${todo.id}`,
           className: 'far fa-clipboard',
           onclick: showNote
         }),
         createElement('textarea', {
-          id: `no${lastId}`,
+          id: `no${todo.id}`,
           onchange: textinput
         }),
         createElement('i', {
-          id: `ed${lastId}`,
+          id: `ed${todo.id}`,
           className: 'far fa-edit',
           onclick: editTask
         }),
         createElement('i', {
-          id: `ed${lastId}`,
+          id: `ed${todo.id}`,
           className: 'far fa-flag'
         }),
         createElement(
           'select',
           {
-            id: `ed${lastId}`,
+            id: `ed${todo.id}`,
             className: 'dropdown',
             onclick: setPriority
           },
@@ -234,7 +208,7 @@ function rendertodo (id, todo, lastId) {
           createElement('option', {}, 'high')
         ),
         createElement('i', {
-          id: `ed${lastId}`,
+          id: `ed${todo.id}`,
           className: 'fas fa-trash-alt',
           onclick: deleteTask
         })
@@ -258,60 +232,58 @@ function sortTodo (tasks) {
   })
 }
 
-function schedule (event) {
-  const todoContainer = event.target.parentNode.parentNode.parentNode.parentNode
-  const id = todoContainer.id.slice(2)
-  const list = JSON.parse(window.localStorage.getItem(id))
-  const tasks = list.todo
-  for (const task of tasks) {
-    if (task.id === Number(event.target.id.slice(2))) {
-      task.scheduled = event.target.value
-    }
-  }
-  list.todo = tasks
-  window.localStorage.setItem(id, JSON.stringify(list))
-  todoContainer.innerHTML = ''
-  sortTodo(tasks)
-  showTaskInput(todoContainer, id)
-  for (const task of tasks) {
-    rendertodo(id, task, task.id)
-  }
-  // main div.innerhtml = ''
-  // Pass to sort fn
-  // send the sored array to render fn
-}
-// for adding tasks
-function addtodo (event) {
+// for adding todo
+async function addtodo (event) {
   if (event.keyCode === 13) {
     if (event.target.value === '') return
-    const todo = JSON.parse(
-      window.localStorage.getItem(event.target.id.slice(4))
-    ).todo
-    let lastId
-    if (todo.length === 0) {
-      lastId = 1
-    } else {
-      lastId = todo[todo.length - 1].id + 1
-    }
-    // creating new todo object
-    const newTodo = {
-      id: lastId,
-      name: event.target.value,
-      complete: false,
-      scheduled: false,
-      priority: 'low',
-      note: ''
-    }
-    rendertodo(event.target.id.slice(4), newTodo, lastId)
+    const response = await fetchData(baseUrl + 'todo/' + event.target.id.slice(4), 'POST', 'application/json', JSON.stringify({
+      todoName: event.target.value
+    }))
     event.target.value = ''
-    const currentList = JSON.parse(
-      window.localStorage.getItem(event.target.id.slice(4))
+    const result = await response.json()
+    rendertodo(result)
+  }
+}
+
+// to display add task input bar
+function showTaskInput (todoContainer, id) {
+  todoContainer.appendChild(
+    createElement(
+      'div',
+      {
+        id: `todo${id}`,
+        className: 'todo'
+      },
+      createElement(
+        'div',
+        {},
+        createElement('input', {
+          id: `inpt${id}`,
+          className: 'todo-input',
+          type: 'text',
+          placeholder: 'Add new todo',
+          onkeydown: addtodo
+        })
+      )
     )
-    currentList.todo.push(newTodo)
-    window.localStorage.setItem(
-      event.target.id.slice(4),
-      JSON.stringify(currentList)
-    )
+  )
+}
+
+// for displaying all todo
+async function showTask (event) {
+  const id = event.target.id.slice(2)
+  const todoContainer = document.getElementById('to' + id)
+  if (document.getElementById(`todo${id}`) !== null) {
+    document.getElementById(`todo${id}`).remove()
+  } else {
+    showTaskInput(todoContainer, id)
+    const response = await fetchData(baseUrl + 'todo/' + id, 'GET', 'application/json')
+    const todos = await response.json()
+    // Call sort todo fn
+    sortTodo(todos)
+    for (const todo of todos) {
+      rendertodo(todo)
+    }
   }
 }
 
@@ -324,6 +296,21 @@ function editTask (event) {
     'task-input-edit'
 }
 
+async function updateTask (event) {
+  if (event.keyCode === 13) {
+    if (event.target.value === '') return
+    event.target.disabled = true
+    event.target.className = 'task-input'
+    console.log(baseUrl + 'todo/' + event.target.id.slice(2))
+    const response = await fetchData(baseUrl + 'todo/' + event.target.id.slice(2), 'PUT', 'application/json', JSON.stringify({
+      column: 'todoname',
+      value: event.target.value
+    }))
+    const result = await response.json()
+    console.log(result)
+  }
+}
+// completed till here
 function deleteTask (event) {
   const list = JSON.parse(
     window.localStorage.getItem(
@@ -364,28 +351,54 @@ function textinput (event) {
   event.target.style.display = 'none'
 }
 
-function updateTask (event) {
-  if (event.keyCode === 13) {
-    if (event.target.value === '') return
-    event.target.disabled = true
-    event.target.className = 'task-input'
-    const list = JSON.parse(
-      window.localStorage.getItem(
-        event.target.parentNode.parentNode.parentNode.id.slice(4)
-      )
-    )
-    const tasks = list.todo
+function schedule (event) {
+  const todoContainer = event.target.parentNode.parentNode.parentNode.parentNode
+  const id = todoContainer.id.slice(2)
+  const list = JSON.parse(window.localStorage.getItem(id))
+  const tasks = list.todo
+  for (const task of tasks) {
+    if (task.id === Number(event.target.id.slice(2))) {
+      task.scheduled = event.target.value
+    }
+  }
+  list.todo = tasks
+  window.localStorage.setItem(id, JSON.stringify(list))
+  todoContainer.innerHTML = ''
+  sortTodo(tasks)
+  showTaskInput(todoContainer, id)
+  for (const task of tasks) {
+    rendertodo(id, task, task.id)
+  }
+  // main div.innerhtml = ''
+  // Pass to sort fn
+  // send the sored array to render fn
+}
+
+function todoComplete (event) {
+  const parent = event.target.parentNode.parentNode
+  const id = parent.id.slice(4)
+  const todoContainer = event.target.parentNode.parentNode.parentNode.parentNode
+  const containerId = todoContainer.id.slice(2)
+  const list = JSON.parse(window.localStorage.getItem(containerId))
+  const tasks = list.todo
+  console.log(document.getElementById('tx' + id).style.textDecoration)
+  if (document.getElementById('tx' + id).style.textDecoration === 'none') {
+    document.getElementById('tx' + id).style.textDecoration = 'line-through'
     for (const task of tasks) {
-      if (task.id === Number(event.target.id.slice(2))) {
-        task.name = event.target.value
+      if (task.id === Number(id)) {
+        task.complete = true
       }
     }
-    list.todo = tasks
-    window.localStorage.setItem(
-      event.target.parentNode.parentNode.parentNode.id.slice(4),
-      JSON.stringify(list)
-    )
+  } else {
+    document.getElementById('tx' + id).style.textDecoration = 'none'
+    for (const task of tasks) {
+      if (task.id === Number(id)) {
+        task.complete = false
+      }
+    }
   }
+  list.todo = tasks
+  window.localStorage.setItem(containerId, JSON.stringify(list))
 }
 
 function showNote (event) {
@@ -441,45 +454,6 @@ function setPriority (event) {
   showTaskInput(todoContainer, id)
   for (const task of tasks) {
     rendertodo(id, task, task.id)
-  }
-}
-
-function showTaskInput (todoContainer, id) {
-  todoContainer.appendChild(
-    createElement(
-      'div',
-      {
-        id: `todo${id}`,
-        className: 'todo'
-      },
-      createElement(
-        'div',
-        {},
-        createElement('input', {
-          id: `inpt${id}`,
-          className: 'todo-input',
-          type: 'text',
-          placeholder: 'Add new todo',
-          onkeydown: addtodo
-        })
-      )
-    )
-  )
-}
-
-function showTask (event) {
-  const id = event.target.id.slice(2)
-  const todoContainer = document.getElementById('to' + id)
-  if (document.getElementById(`todo${id}`) !== null) {
-    document.getElementById(`todo${id}`).remove()
-  } else {
-    showTaskInput(todoContainer, id)
-    const tasks = JSON.parse(window.localStorage.getItem(id)).todo
-    // Call sort todo fn
-    sortTodo(tasks)
-    for (const task of tasks) {
-      rendertodo(id, task, task.id)
-    }
   }
 }
 
