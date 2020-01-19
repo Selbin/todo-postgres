@@ -132,7 +132,7 @@ function renderList (list) {
 // to render todos
 function rendertodo (todo) {
   let complete
-  todo.complete ? (complete = 'line-through') : (complete = 'none')
+  todo.completed ? (complete = 'line-through') : (complete = 'none')
   document.getElementById('todo' + todo.listid).appendChild(
     createElement(
       'div',
@@ -142,7 +142,7 @@ function rendertodo (todo) {
         {},
         createElement('input', {
           type: 'checkbox',
-          checked: todo.complete,
+          checked: todo.completed,
           name: 'todo-complete',
           onclick: todoComplete
         })
@@ -287,7 +287,7 @@ async function showTask (event) {
   }
 }
 
-// for editing task
+// for displaying input box for todo name
 function editTask (event) {
   event.target.parentNode.parentNode.querySelectorAll(
     'input'
@@ -296,6 +296,7 @@ function editTask (event) {
     'task-input-edit'
 }
 
+// for updating todoname
 async function updateTask (event) {
   if (event.keyCode === 13) {
     if (event.target.value === '') return
@@ -310,120 +311,84 @@ async function updateTask (event) {
     console.log(result)
   }
 }
-// completed till here
-function deleteTask (event) {
-  const list = JSON.parse(
-    window.localStorage.getItem(
-      event.target.parentNode.parentNode.parentNode.id.slice(4)
-    )
-  )
-  const tasks = list.todo
-  for (const task of tasks) {
-    if (task.id === Number(event.target.id.slice(2))) {
-      tasks.splice(tasks.indexOf(task), 1)
-    }
-  }
-  list.todo = tasks
-  window.localStorage.setItem(
-    event.target.parentNode.parentNode.parentNode.id.slice(4),
-    JSON.stringify(list)
-  )
+
+// function to delete a todo
+async function deleteTask (event) {
+  const response = await fetchData(baseUrl + 'todo/' + event.target.id.slice(2), 'DELETE', 'application/json')
+  const result = await response.json()
+  console.log(result)
   event.target.parentNode.parentNode.remove()
 }
 
-function textinput (event) {
-  const list = JSON.parse(
-    window.localStorage.getItem(
-      event.target.parentNode.parentNode.parentNode.id.slice(4)
-    )
-  )
-  const tasks = list.todo
-  for (const task of tasks) {
-    if (task.id === Number(event.target.id.slice(2))) {
-      task.note = event.target.value
-    }
+// to render note block
+async function showNote (event) {
+  const note = event.target.parentNode.querySelector('textarea')
+  if (
+    note.style.display === 'none'
+  ) {
+    const id = event.target.parentNode.parentNode.parentNode.id.slice(4)
+    const response = await fetchData(baseUrl + 'todo/' + id, 'GET', 'application/json')
+    const result = await response.json()
+    console.log(result)
+    result.forEach(element => {
+      if (element.id === parseInt(event.target.id.slice(2))) note.value = element.note
+    })
+    note.style.display = 'block'
+  } else {
+    note.style.display = 'none'
   }
-  list.todo = tasks
-  window.localStorage.setItem(
-    event.target.parentNode.parentNode.parentNode.id.slice(4),
-    JSON.stringify(list)
-  )
+}
+
+// event to add note
+async function textinput (event) {
+  const id = event.target.id.slice(2)
+  const response = await fetchData(baseUrl + 'todo/' + id, 'PUT', 'application/json', JSON.stringify({
+    column: 'note',
+    value: event.target.value
+  }))
+  const result = await response.json()
+  console.log(result)
   event.target.style.display = 'none'
 }
 
-function schedule (event) {
+// to set date
+async function schedule (event) {
   const todoContainer = event.target.parentNode.parentNode.parentNode.parentNode
-  const id = todoContainer.id.slice(2)
-  const list = JSON.parse(window.localStorage.getItem(id))
-  const tasks = list.todo
-  for (const task of tasks) {
-    if (task.id === Number(event.target.id.slice(2))) {
-      task.scheduled = event.target.value
-    }
-  }
-  list.todo = tasks
-  window.localStorage.setItem(id, JSON.stringify(list))
+  const id = event.target.id.slice(2)
+  await fetchData(baseUrl + 'todo/' + id, 'PUT', 'application/json', JSON.stringify({
+    column: 'scheduled',
+    value: event.target.value
+  }))
+  let todos = await fetchData(baseUrl + 'todo/' + todoContainer.id.slice(2), 'GET', 'application/json')
+  todos = await todos.json()
   todoContainer.innerHTML = ''
-  sortTodo(tasks)
-  showTaskInput(todoContainer, id)
-  for (const task of tasks) {
-    rendertodo(id, task, task.id)
+  sortTodo(todos)
+  showTaskInput(todoContainer, todoContainer.id.slice(2))
+  for (const todo of todos) {
+    rendertodo(todo)
   }
-  // main div.innerhtml = ''
-  // Pass to sort fn
-  // send the sored array to render fn
 }
 
-function todoComplete (event) {
+// to complete todo
+async function todoComplete (event) {
   const parent = event.target.parentNode.parentNode
   const id = parent.id.slice(4)
-  const todoContainer = event.target.parentNode.parentNode.parentNode.parentNode
-  const containerId = todoContainer.id.slice(2)
-  const list = JSON.parse(window.localStorage.getItem(containerId))
-  const tasks = list.todo
-  console.log(document.getElementById('tx' + id).style.textDecoration)
   if (document.getElementById('tx' + id).style.textDecoration === 'none') {
     document.getElementById('tx' + id).style.textDecoration = 'line-through'
-    for (const task of tasks) {
-      if (task.id === Number(id)) {
-        task.complete = true
-      }
-    }
+    await fetchData(baseUrl + 'todo/' + id, 'PUT', 'application/json', JSON.stringify({
+      column: 'completed', value: true
+    }))
   } else {
     document.getElementById('tx' + id).style.textDecoration = 'none'
-    for (const task of tasks) {
-      if (task.id === Number(id)) {
-        task.complete = false
-      }
-    }
-  }
-  list.todo = tasks
-  window.localStorage.setItem(containerId, JSON.stringify(list))
-}
-
-function showNote (event) {
-  if (
-    event.target.parentNode.querySelector('textarea').style.display === 'none'
-  ) {
-    const tasks = JSON.parse(
-      window.localStorage.getItem(
-        event.target.parentNode.parentNode.parentNode.id.slice(4)
-      )
-    ).todo
-    for (const task of tasks) {
-      if (task.id === Number(event.target.id.slice(2))) {
-        event.target.parentNode.querySelector('textarea').value = task.note
-      }
-    }
-    event.target.parentNode.querySelector('textarea').style.display = 'block'
-  } else {
-    event.target.parentNode.querySelector('textarea').style.display = 'none'
+    await fetchData(baseUrl + 'todo/' + id, 'PUT', 'application/json', JSON.stringify({
+      column: 'completed', value: false
+    }))
   }
 }
 
-function setPriority (event) {
+async function setPriority (event) {
   const todoContainer = event.target.parentNode.parentNode.parentNode.parentNode
-  const id = todoContainer.id.slice(2)
+  const id = event.target.id.slice(2)
   if (event.target.value === 'low') {
     event.target.parentNode.parentNode.style.color = 'whitesmoke'
   }
@@ -433,27 +398,17 @@ function setPriority (event) {
   if (event.target.value === 'high') {
     event.target.parentNode.parentNode.style.color = 'rgb(189,60,60)'
   }
-  const list = JSON.parse(
-    window.localStorage.getItem(
-      event.target.parentNode.parentNode.parentNode.id.slice(4)
-    )
-  )
-  const tasks = list.todo
-  for (const task of tasks) {
-    if (task.id === Number(event.target.id.slice(2))) {
-      task.priority = event.target.value
-    }
-  }
-  list.todo = tasks
-  window.localStorage.setItem(
-    event.target.parentNode.parentNode.parentNode.id.slice(4),
-    JSON.stringify(list)
-  )
-  sortTodo(tasks)
+  await fetchData(baseUrl + 'todo/' + id, 'PUT', 'application/json', JSON.stringify({
+    column: 'priority',
+    value: event.target.value
+  }))
+  let todos = await fetchData(baseUrl + 'todo/' + todoContainer.id.slice(2), 'GET', 'application/json')
+  todos = await todos.json()
+  sortTodo(todos)
   todoContainer.innerHTML = ''
-  showTaskInput(todoContainer, id)
-  for (const task of tasks) {
-    rendertodo(id, task, task.id)
+  showTaskInput(todoContainer, todoContainer.id.slice(2))
+  for (const todo of todos) {
+    rendertodo(todo)
   }
 }
 
