@@ -451,9 +451,9 @@ search.addEventListener('click', event => {
         showAllList()
         return
       }
+      mainContainer.innerHTML = ''
       for (const list of allList) {
         if (regex.test(list.listname)) {
-          mainContainer.innerHTML = ''
           renderList(list)
         }
       }
